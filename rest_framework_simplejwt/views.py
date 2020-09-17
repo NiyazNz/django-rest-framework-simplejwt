@@ -18,6 +18,7 @@ from .authentication import AUTH_HEADER_TYPES
 from .exceptions import InvalidToken, TokenError
 
 #Need to set samesite to None. (Available in django 3.1)
+# set secure to True with None
 class Response(R):
 
      def set_cookie(self, key, value='', max_age=None, expires=None, path='/',
@@ -56,7 +57,7 @@ class Response(R):
             self.cookies[key]['path'] = path
         if domain is not None:
             self.cookies[key]['domain'] = domain
-        if secure:
+        if secure or samesite.lower() == 'none':
             self.cookies[key]['secure'] = True
         if httponly:
             self.cookies[key]['httponly'] = True
@@ -256,12 +257,14 @@ class TokenCookieDeleteView(APIView):
         response.delete_cookie(
             api_settings.AUTH_COOKIE,
             domain=api_settings.AUTH_COOKIE_DOMAIN,
-            path=api_settings.AUTH_COOKIE_PATH
+            path=api_settings.AUTH_COOKIE_PATH,
+            samesite=api_settings.AUTH_COOKIE_SAMESITE
         )
         response.delete_cookie(
             '{}_refresh'.format(api_settings.AUTH_COOKIE),
             domain=None,
             path=reverse(self.token_refresh_view_name),
+            samesite=api_settings.AUTH_COOKIE_SAMESITE
         )
 
 
